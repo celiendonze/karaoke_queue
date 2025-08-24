@@ -2,6 +2,8 @@
 
 A simple web application to manage karaoke song requests and queue.
 
+![Karaoke Queue App](images/screenshot.png)
+
 ## Features
 
 - Add songs to the queue
