@@ -12,37 +12,50 @@
         background-color: #f8f9fa;
         cursor: pointer;
     }
+
+    body {
+        background-image: url('background.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+        min-height: 100vh;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+    }
 </style>
 
 <body>
-    <h1 class="text-center my-4">Application de file d'attente de karaoké</h1>
-    <div class="container d-flex flex-row">
-        <div id="left-panel" class="d-flex flex-column gap-3" style="width: 50%;">
-            <label for="file-input" id="file-input-label" class="mb-2">Liste de chansons:</label>
-            <input type="file" id="file-input" class="form-control mb-2" />
-            <div id="hide-at-start" hidden>
-                <div id="songs-container" class="container mt-3 d-flex flex-column gap-3">
-                    <input type="text" id="song-search" class="form-control mb-2"
-                        placeholder="Rechercher une chanson..." />
-                    <div id="songs-list" class="overflow-y-scroll mb-2 border rounded shadow-sm"
-                        style="max-height: 500px;"></div>
-                    <div id="selected-song" class="font-weight-bold mb-2"></div>
-                    <input type="text" id="singer-name" class="form-control mb-2" placeholder="Prénom..." />
-                    <input type="button" id="submit-btn" class="btn btn-primary mb-2"
-                        value="Ajouter à la file d'attente" />
+    <div class="container-fluid p-0" style="min-height: 100vh; width: 100vw; overflow: hidden;">
+        <h1 class="text-center my-4">File d'attente Karaoké</h1>
+        <div class="container d-flex flex-row">
+            <div id="left-panel" class="d-flex flex-column gap-3 m-2" style="width: 50%;">
+                <label for="file-input" id="file-input-label" class="mb-2">Liste de chansons:</label>
+                <input type="file" id="file-input" class="form-control mb-2" />
+                <div id="hide-at-start" hidden>
+                    <div id="songs-container" class="container mt-3 d-flex flex-column gap-3">
+                        <input type="text" id="song-search" class="form-control mb-2"
+                            placeholder="Rechercher une chanson..." style="font-size: 2rem;" />
+                        <div id="songs-list" class="overflow-y-scroll mb-2 border rounded shadow-sm"
+                            style="height: 50vh; background-color: white;"></div>
+                        <div id="selected-song" class="font-weight-bold mb-2">Aucune chanson sélectionnée</div>
+                        <input type="text" id="singer-name" class="form-control mb-2" placeholder="Prénom..."
+                            style="font-size: 2rem;" />
+                        <input type="button" id="submit-btn" class="btn btn-primary mb-2"
+                            value="Ajouter à la file d'attente" />
+                    </div>
                 </div>
-            </div>
-            <div id="error-message" class="text-danger"></div>
+                <div id="error-message" class="text-danger"></div>
 
-        </div>
-        <div id="right-panel" class="d-flex flex-column ms-4 gap-3" style="width: 50%;">
-            <h2 class="mb-3">Chanson en attente</h2>
-            <div id="current-song" class="font-weight-bold mb-3 text-center" style="font-size: 2rem;"></div>
-            <input type="button" id="next-btn" class="btn btn-secondary mb-3" value="Chanson suivante" />
-            <div id="queue-list"></div>
+            </div>
+            <div id="right-panel" class="d-flex flex-column gap-3 mt-3 m-2" style="width: 50%;">
+                <div id="current-song" class="font-weight-bold mb-3 text-center" style="font-size: 2rem;">
+                </div>
+                <input type="button" id="next-btn" class="btn btn-secondary mb-3" value="Chanson suivante" />
+                <div id="queue-list"></div>
+            </div>
         </div>
     </div>
-
 </body>
 <script src="bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -126,6 +139,13 @@
         if (event.target.classList.contains('song-item')) {
             selectedSong = event.target.textContent;
             selectedSongInput.textContent = 'Chanson sélectionnée: ' + selectedSong;
+            singerName.focus();
+        }
+    });
+    // when user presses enter in singerName input
+    singerName.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            submitBtn.click();
         }
     });
     // submit button click
@@ -134,7 +154,7 @@
             karokeQueue.push({ song: selectedSong, singer: singerName.value.trim() });
             // reset inputs
             selectedSong = '';
-            selectedSongInput.textContent = '';
+            selectedSongInput.textContent = 'Aucune chanson sélectionnée';
             singerName.value = '';
             errorMessage.textContent = '';
             songSearch.value = '';
