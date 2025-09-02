@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karaoke</title>
     <link href="bootstrap-5.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
-<style>
-    .song-item:hover {
-        background-color: #f8f9fa;
-        cursor: pointer;
-    }
-
-    body {
-        background-image: url('background.png');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        min-height: 100vh;
-        width: 100vw;
-        margin: 0;
-        padding: 0;
-    }
-</style>
 
 <body>
-    <div class="container-fluid p-0" style="min-height: 100vh; width: 100vw; overflow: hidden;">
+    <div class="container-fluid p-0" style="min-height: 100vh; max-height: 100vh; width: 100vw; overflow: hidden;">
         <h1 class="text-center my-4">File d'attente Karaoké</h1>
+        <button id="reset-btn" class="btn btn-outline-danger mb-4">Réinitialiser</button>
         <div class="container d-flex flex-row">
             <div id="left-panel" class="d-flex flex-column gap-3 m-2" style="width: 50%;">
-                <label for="file-input" id="file-input-label" class="mb-2">Liste de chansons:</label>
-                <input type="file" id="file-input" class="form-control mb-2" />
+                <div id="file-input-container">
+                    <label for="file-input" id="file-input-label" class="mb-2">Liste de chansons:</label>
+                    <input type="file" id="file-input" class="form-control mb-2" />
+                </div>
+
                 <div id="hide-at-start" hidden>
                     <div id="songs-container" class="container mt-3 d-flex flex-column gap-3">
                         <input type="text" id="song-search" class="form-control mb-2"
@@ -41,8 +29,7 @@
                         <div id="selected-song" class="font-weight-bold mb-2">Aucune chanson sélectionnée</div>
                         <input type="text" id="singer-name" class="form-control mb-2" placeholder="Prénom..."
                             style="font-size: 2rem;" />
-                        <input type="button" id="submit-btn" class="btn btn-primary mb-2"
-                            value="Ajouter à la file d'attente" />
+                        <button id="submit-btn" class="btn btn-primary mb-2">Ajouter à la file d'attente</button>
                     </div>
                 </div>
                 <div id="error-message" class="text-danger"></div>
@@ -51,170 +38,32 @@
             <div id="right-panel" class="d-flex flex-column gap-3 mt-3 m-2" style="width: 50%;">
                 <div id="current-song" class="font-weight-bold mb-3 text-center" style="font-size: 2rem;">
                 </div>
-                <input type="button" id="next-btn" class="btn btn-secondary mb-3" value="Chanson suivante" />
-                <div id="queue-list"></div>
+                <button id="next-btn" class="btn btn-primary mb-3">Chanson suivante</button>
+
+                <div style="flex: 1 1 0; display: flex; flex-direction: column;">
+                    <h3>File d'attente:</h3>
+                    <div style="flex: 1 1 0; overflow-y: auto;">
+                        <table id="queue-list" class="table table-bordered w-100 m-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Chanteur</th>
+                                    <th>Chanson</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="queue-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="queue-info"></div>
             </div>
         </div>
     </div>
 </body>
 <script src="bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let karokeQueue = [];
-    let fileInput = document.getElementById('file-input');
-    let fileInputLabel = document.getElementById('file-input-label');
-    let songsContainer = document.getElementById('songs-container');
-    let songsList = document.getElementById('songs-list');
-    let songSearch = document.getElementById('song-search');
-    let selectedSongInput = document.getElementById('selected-song');
-    let selectedSong = '';
-    let singerName = document.getElementById('singer-name');
-    let submitBtn = document.getElementById('submit-btn');
-    let errorMessage = document.getElementById('error-message');
-    let queueList = document.getElementById('queue-list');
-    let nextBtn = document.getElementById('next-btn');
-    let currentSong = document.getElementById('current-song');
-    let allSongs = [];
-
-    document.addEventListener('DOMContentLoaded', function () {
-        updateQueueList();
-    });
-
-    function updateQueueList() {
-        queueList.innerHTML = '<h3>File d\'attente:</h3>';
-        if (karokeQueue.length === 0) {
-            queueList.innerHTML += '<p>Aucune chanson en attente.</p>';
-            currentSong.textContent = 'Aucune chanson en attente.';
-            return;
-        }
-
-        currentSong.textContent = karokeQueue[0].singer + ' chante ' + karokeQueue[0].song;
-
-        karokeQueue.forEach((item, index) => {
-            const queueItem = document.createElement('div');
-            queueItem.classList.add('queue-item');
-            queueItem.classList.add('border', 'p-2', 'mb-2', 'rounded', 'd-flex', 'justify-content-between');
-            const numberDiv = document.createElement('div');
-            numberDiv.classList.add('queue-number', 'me-3');
-            numberDiv.textContent = (index + 1) + '.';
-            queueItem.appendChild(numberDiv);
-            const singerDiv = document.createElement('div');
-            singerDiv.classList.add('singer-name', 'me-3', 'font-weight-bold');
-            queueItem.appendChild(singerDiv);
-            singerDiv.textContent = item.singer;
-            const songDiv = document.createElement('div');
-            songDiv.classList.add('song-name', 'me-3');
-            songDiv.textContent = item.song;
-            queueItem.appendChild(songDiv);
-            const removeBtn = document.createElement('button');
-            removeBtn.classList.add('remove-btn', 'btn', 'btn-danger', 'btn-sm', 'mt-1');
-            removeBtn.textContent = 'Supprimer';
-            queueItem.appendChild(removeBtn);
-            removeBtn.addEventListener('click', function () {
-                karokeQueue.splice(index, 1);
-                updateQueueList();
-            });
-            queueList.appendChild(queueItem);
-        });
-    }
-
-    function updateSongsList(songs) {
-        songsList.innerHTML = '';
-        songs.forEach((line, index) => {
-            const songItem = document.createElement('div');
-            songItem.classList.add('song-item');
-            songItem.classList.add('p-2', 'border-bottom');
-            songItem.textContent = line;
-            songsList.appendChild(songItem);
-        });
-    }
-
-    // filter songs list based on search input
-    songSearch.addEventListener('input', function () {
-        const query = this.value.toLowerCase();
-        const filteredSongs = allSongs.filter(song => song.toLowerCase().includes(query));
-        updateSongsList(filteredSongs);
-    });
-    // select song from list
-    songsList.addEventListener('click', function (event) {
-        if (event.target.classList.contains('song-item')) {
-            selectedSong = event.target.textContent;
-            selectedSongInput.textContent = 'Chanson sélectionnée: ' + selectedSong;
-            singerName.focus();
-        }
-    });
-    // when user presses enter in singerName input
-    singerName.addEventListener('keypress', function (event) {
-        if (event.key === 'Enter') {
-            submitBtn.click();
-        }
-    });
-    // submit button click
-    submitBtn.addEventListener('click', function () {
-        if (selectedSong && singerName.value.trim()) {
-            karokeQueue.push({ song: selectedSong, singer: singerName.value.trim() });
-            // reset inputs
-            selectedSong = '';
-            selectedSongInput.textContent = 'Aucune chanson sélectionnée';
-            singerName.value = '';
-            errorMessage.textContent = '';
-            songSearch.value = '';
-            updateSongsList(allSongs);
-            updateQueueList();
-        } else {
-            if (!selectedSong && singerName.value.trim() === '') {
-                errorMessage.textContent = 'Veuillez sélectionner une chanson et entrer le nom du chanteur.';
-                singerName.focus();
-                return;
-            }
-            if (singerName.value.trim() === '') {
-                errorMessage.textContent = 'Veuillez entrer le nom du chanteur.';
-                singerName.focus();
-                return;
-            }
-            if (!selectedSong) {
-                selectedSongInput.textContent = 'Veuillez sélectionner une chanson.';
-            }
-        }
-    });
-    // next button click
-    nextBtn.addEventListener('click', function () {
-        if (karokeQueue.length > 0) {
-            karokeQueue.shift();
-            updateQueueList();
-            errorMessage.textContent = '';
-        } else {
-            errorMessage.textContent = 'La file d\'attente est vide.';
-        }
-    });
-    // read file input
-    fileInput.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-
-        if (file) {
-            // read txt file first few lines
-            if (file.type === 'text/plain') {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const text = e.target.result;
-                    const lines = text.split('\n');
-                    allSongs = lines.map(line => line.trim()).filter(line => line.length > 0);
-                    // remove .txt extension if present
-                    allSongs = allSongs.map(line => line.endsWith('.txt') ? line.slice(0, -4) : line);
-                    // populate songs list
-                    updateSongsList(allSongs);
-                };
-                reader.readAsText(file);
-                fileInput.hidden = true;
-                fileInputLabel.hidden = true;
-                document.getElementById('hide-at-start').hidden = false;
-                return;
-            } else {
-                errorMessage.innerHTML = '<p>Unsupported file type. Please upload a .txt file.</p>';
-            }
-        } else {
-            errorMessage.innerHTML = '<p>No file selected</p>';
-        }
-    });
-</script>
+<script src="script.js"></script>
 
 </html>
