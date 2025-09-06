@@ -57,6 +57,7 @@ resetBtn.addEventListener('click', function () {
 
 function updateQueueList() {
     queueBody.innerHTML = '';
+    document.getElementById('queue-info').innerHTML = '';
     if (karokeQueue.length === 0) {
         document.getElementById('queue-info').innerHTML = '<p>Aucune chanson en attente.</p>';
         currentSong.textContent = 'Aucune chanson en attente.';
